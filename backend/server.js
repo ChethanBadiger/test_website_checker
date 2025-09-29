@@ -7,10 +7,11 @@ const csv = require("csv-parser");
 const app = express();
 const upload = multer({ dest: "uploads/" });
 
+app.use(express.json()); // allow JSON bodies
+
 // setup SQLite database
 const db = new Database("data.db");
 
-// create table with only id + url
 db.prepare(`
   CREATE TABLE IF NOT EXISTS records (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -18,8 +19,27 @@ db.prepare(`
   )
 `).run();
 
-// API endpoint
-app.post("/upload", upload.single("csv"), (req, res) => {
+
+// ----------- Endpoint: Insert single URL -----------
+app.post("/upload-url", (req, res) => {
+  const { url } = req.body;
+
+  if (!url || !url.startsWith("http")) {
+    return res.status(400).json({ error: "A valid URL is required" });
+  }
+
+  const insertStmt = db.prepare("INSERT INTO records (url) VALUES (?)");
+  insertStmt.run(url.trim());
+
+  res.json({
+    message: "Single URL inserted successfully",
+    rowsInserted: 1,
+  });
+});
+
+
+// ----------- Endpoint: Insert from CSV file -----------
+app.post("/upload-csv", upload.single("csv"), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: "CSV file is required" });
   }
@@ -32,17 +52,19 @@ app.post("/upload", upload.single("csv"), (req, res) => {
   fs.createReadStream(filePath)
     .pipe(csv())
     .on("data", (row) => {
-      // look for a column named 'url' or 'URL'
-      const foundUrl = row.url || row.URL;
-      if (foundUrl && foundUrl.trim() !== "") {
-        insertStmt.run(foundUrl.trim());
-        rowCount++;
+      // scan all columns for something that looks like a URL
+      for (const key in row) {
+        const value = row[key];
+        if (value && value.startsWith("http")) {
+          insertStmt.run(value.trim());
+          rowCount++;
+        }
       }
     })
     .on("end", () => {
       fs.unlinkSync(filePath); // cleanup uploaded file
       res.json({
-        message: "Data inserted successfully",
+        message: "CSV processed successfully",
         rowsInserted: rowCount,
       });
     })
@@ -52,6 +74,8 @@ app.post("/upload", upload.single("csv"), (req, res) => {
     });
 });
 
+
+// ----------- Start server -----------
 app.listen(5000, () => {
-    console.log("Server running on http://localhost:5000");
+  console.log("Server running on http://localhost:5000");
 });
