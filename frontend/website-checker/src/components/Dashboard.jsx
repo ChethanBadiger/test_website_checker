@@ -1,81 +1,75 @@
-const express = require("express");
-const multer = require("multer");
-const Database = require("better-sqlite3");
-const fs = require("fs");
-const csv = require("csv-parser");
+import React, { useState } from 'react';
 
-const app = express();
-const upload = multer({ dest: "uploads/" });
+function Dashboard() {
+  const [url, setUrl] = useState('');
+  const [file, setFile] = useState(null);
 
-app.use(express.json()); // allow JSON bodies
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile && selectedFile.type === "text/csv") {
+      setFile(selectedFile);
+      setUrl(""); // reset URL if file chosen
+    } else {
+      alert("Please upload a valid CSV file.");
+      e.target.value = null;
+    }
+  };
 
-// setup SQLite database
-const db = new Database("data.db");
+  const handleUrlChange = (e) => {
+    setUrl(e.target.value);
+    setFile(null); // reset file if URL entered
+  };
 
-db.prepare(`
-  CREATE TABLE IF NOT EXISTS records (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    url TEXT
-  )
-`).run();
+  const handleSubmit = async () => {
+    try {
+      let response;
 
+      if (url) {
+        // Case 1: send URL as JSON
+        response = await fetch("http://localhost:5000/upload-url", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        });
+      } else if (file) {
+        // Case 2: send CSV as FormData
+        const formData = new FormData();
+        formData.append("csv", file);
 
-// ----------- Endpoint: Insert single URL -----------
-app.post("/upload-url", (req, res) => {
-  const { url } = req.body;
-
-  if (!url || !url.startsWith("http")) {
-    return res.status(400).json({ error: "A valid URL is required" });
-  }
-
-  const insertStmt = db.prepare("INSERT INTO records (url) VALUES (?)");
-  insertStmt.run(url.trim());
-
-  res.json({
-    message: "Single URL inserted successfully",
-    rowsInserted: 1,
-  });
-});
-
-
-// ----------- Endpoint: Insert from CSV file -----------
-app.post("/upload-csv", upload.single("csv"), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: "CSV file is required" });
-  }
-
-  const filePath = req.file.path;
-  let rowCount = 0;
-
-  const insertStmt = db.prepare("INSERT INTO records (url) VALUES (?)");
-
-  fs.createReadStream(filePath)
-    .pipe(csv())
-    .on("data", (row) => {
-      // scan all columns for something that looks like a URL
-      for (const key in row) {
-        const value = row[key];
-        if (value && value.startsWith("http")) {
-          insertStmt.run(value.trim());
-          rowCount++;
-        }
+        response = await fetch("http://localhost:5000/upload-csv", {
+          method: "POST",
+          body: formData,
+        });
+      } else {
+        alert("Please enter a URL or select a CSV file.");
+        return;
       }
-    })
-    .on("end", () => {
-      fs.unlinkSync(filePath); // cleanup uploaded file
-      res.json({
-        message: "CSV processed successfully",
-        rowsInserted: rowCount,
-      });
-    })
-    .on("error", (err) => {
-      console.error("CSV parse error:", err);
-      res.status(500).json({ error: "Failed to parse CSV" });
-    });
-});
 
+      const data = await response.json();
+      console.log("Server Response:", data);
+      alert(`Success: ${data.rowsInserted} row(s) inserted`);
+    } catch (err) {
+      console.error("Error:", err);
+      alert("Upload failed");
+    }
+  };
 
-// ----------- Start server -----------
-app.listen(5000, () => {
-  console.log("Server running on http://localhost:5000");
-});
+  return (
+    <>
+      <input
+        type="text"
+        placeholder="Enter website URL"
+        value={url}
+        onChange={handleUrlChange}
+      />
+      <input
+        type="file"
+        accept=".csv"
+        onChange={handleFileChange}
+      />
+      <button onClick={handleSubmit}>Submit</button>
+    </>
+  );
+}
+
+export default Dashboard;
