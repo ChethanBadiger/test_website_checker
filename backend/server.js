@@ -17,7 +17,7 @@ app.post("/upload-url", (req, res) => {
     return res.status(400).json({ error: "A valid URL is required" });
   }
 
-  resetTable();   // clear all rows + reset id
+  resetTable(); // clear all rows + reset id
   insertUrl(url);
 
   res.json({
@@ -32,13 +32,13 @@ app.post("/upload-csv", upload.single("csv"), (req, res) => {
     return res.status(400).json({ error: "CSV file is required" });
   }
 
-  resetTable();   // clear all rows + reset id
+  resetTable(); // clear all rows + reset id
 
   const filePath = req.file.path;
   let rowCount = 0;
 
   fs.createReadStream(filePath)
-    .pipe(csv({headers: false}))
+    .pipe(csv({ headers: false }))
     .on("data", (row) => {
       for (const key in row) {
         const value = row[key];
