@@ -1,26 +1,15 @@
 const express = require("express");
 const multer = require("multer");
-const Database = require("better-sqlite3");
 const fs = require("fs");
 const csv = require("csv-parser");
+const { insertUrl, resetTable } = require("./db");
 
 const app = express();
 const upload = multer({ dest: "uploads/" });
 
-app.use(express.json()); // allow JSON bodies
+app.use(express.json());
 
-// setup SQLite database
-const db = new Database("data.db");
-
-db.prepare(`
-  CREATE TABLE IF NOT EXISTS records (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    url TEXT
-  )
-`).run();
-
-
-// ----------- Endpoint: Insert single URL -----------
+// ----------- Insert single URL -----------
 app.post("/upload-url", (req, res) => {
   const { url } = req.body;
 
@@ -28,43 +17,41 @@ app.post("/upload-url", (req, res) => {
     return res.status(400).json({ error: "A valid URL is required" });
   }
 
-  const insertStmt = db.prepare("INSERT INTO records (url) VALUES (?)");
-  insertStmt.run(url.trim());
+  resetTable();   // clear all rows + reset id
+  insertUrl(url);
 
   res.json({
-    message: "Single URL inserted successfully",
+    message: "Single URL inserted successfully (database reset first)",
     rowsInserted: 1,
   });
 });
 
-
-// ----------- Endpoint: Insert from CSV file -----------
+// ----------- Insert from CSV file -----------
 app.post("/upload-csv", upload.single("csv"), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: "CSV file is required" });
   }
 
+  resetTable();   // clear all rows + reset id
+
   const filePath = req.file.path;
   let rowCount = 0;
 
-  const insertStmt = db.prepare("INSERT INTO records (url) VALUES (?)");
-
   fs.createReadStream(filePath)
-    .pipe(csv())
+    .pipe(csv({headers: false}))
     .on("data", (row) => {
-      // scan all columns for something that looks like a URL
       for (const key in row) {
         const value = row[key];
         if (value && value.startsWith("http")) {
-          insertStmt.run(value.trim());
+          insertUrl(value);
           rowCount++;
         }
       }
     })
     .on("end", () => {
-      fs.unlinkSync(filePath); // cleanup uploaded file
+      fs.unlinkSync(filePath);
       res.json({
-        message: "CSV processed successfully",
+        message: "CSV processed successfully (database reset first)",
         rowsInserted: rowCount,
       });
     })
@@ -73,7 +60,6 @@ app.post("/upload-csv", upload.single("csv"), (req, res) => {
       res.status(500).json({ error: "Failed to parse CSV" });
     });
 });
-
 
 // ----------- Start server -----------
 app.listen(5000, () => {
