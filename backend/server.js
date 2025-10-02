@@ -1,5 +1,6 @@
 const express = require("express");
 const multer = require("multer");
+const cors = require("cors");
 const fs = require("fs");
 const csv = require("csv-parser");
 const { insertUrl, resetTable } = require("./db");
@@ -7,6 +8,7 @@ const { insertUrl, resetTable } = require("./db");
 const app = express();
 const upload = multer({ dest: "uploads/" });
 
+app.use(cors());
 app.use(express.json());
 
 // ----------- Insert single URL -----------
@@ -62,6 +64,7 @@ app.post("/upload-csv", upload.single("csv"), (req, res) => {
 });
 
 // ----------- Start server -----------
-app.listen(5000, () => {
+const port = process.env.PORT || 5000;
+app.listen(port, () => {
   console.log("Server running on http://localhost:5000");
 });

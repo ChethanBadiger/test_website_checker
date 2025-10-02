@@ -26,7 +26,7 @@ function Dashboard() {
 
       if (url) {
         // Case 1: send URL as JSON
-        response = await fetch("http://localhost:5000/upload-url", {
+        response = await fetch("/api/upload_url", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ url }),
@@ -36,7 +36,7 @@ function Dashboard() {
         const formData = new FormData();
         formData.append("csv", file);
 
-        response = await fetch("http://localhost:5000/upload-csv", {
+        response = await fetch("/api/upload_csv", {
           method: "POST",
           body: formData,
         });
