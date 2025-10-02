@@ -1,4 +1,4 @@
-const { insertUrl, resetTable } = require("../db");
+const { insertUrl, resetTable } = require("../backend/db");
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") {

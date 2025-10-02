@@ -1,7 +1,7 @@
 const fs = require("fs");
 const csv = require("csv-parser");
 const formidable = require("formidable");
-const { insertUrl, resetTable } = require("../db");
+const { insertUrl, resetTable } = require("../backend/db");
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") {
@@ -9,7 +9,11 @@ module.exports = async (req, res) => {
     return;
   }
 
-  const form = formidable({ multiples: false, uploadDir: "/tmp", keepExtensions: true });
+  const form = formidable({
+    multiples: false,
+    uploadDir: "/tmp",
+    keepExtensions: true,
+  });
 
   form.parse(req, (err, fields, files) => {
     if (err) {
