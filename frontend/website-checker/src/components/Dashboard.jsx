@@ -44,12 +44,8 @@ function Dashboard() {
         alert("Please enter a URL or select a CSV file.");
         return;
       }
-
-      if (!response.ok) {
-      const text = await response.text(); // catch HTML error pages
-      throw new Error(text);
-    }
-
+      console.log(response);
+      
       const data = await response.json();
       console.log("Server Response:", data);
       alert(`Success: ${data.rowsInserted} row(s) inserted`);
