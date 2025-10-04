@@ -45,6 +45,11 @@ function Dashboard() {
         return;
       }
 
+      if (!response.ok) {
+      const text = await response.text(); // catch HTML error pages
+      throw new Error(text);
+    }
+
       const data = await response.json();
       console.log("Server Response:", data);
       alert(`Success: ${data.rowsInserted} row(s) inserted`);
