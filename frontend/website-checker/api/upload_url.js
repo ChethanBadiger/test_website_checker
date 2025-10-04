@@ -1,5 +1,5 @@
 // /api/upload-url.js
-const { insertUrl, resetTable } = require("../db");
+const { insertUrl, resetTable } = require("../../../backend/db");
 
 module.exports = async (req, res) => {
   try {
