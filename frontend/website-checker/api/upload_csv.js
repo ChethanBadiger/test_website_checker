@@ -1,13 +1,18 @@
 const fs = require("fs");
 const csv = require("csv-parser");
+const express = require("express");
 const formidable = require("formidable");
 const { insertUrl, resetTable } = require("../../../backend/db");
+
+const app = express();
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") {
     res.status(405).json({ error: "Method not allowed" });
     return;
   }
+
+  app.use(express.json());
 
   const form = formidable({
     multiples: false,
