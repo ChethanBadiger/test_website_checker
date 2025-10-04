@@ -6,6 +6,9 @@ module.exports = async (req, res) => {
     return;
   }
 
+  const form = formidable({ multiples: false, uploadDir: "/tmp", keepExtensions: true });
+
+
   try {
     const body = await new Promise((resolve, reject) => {
       let data = "";
