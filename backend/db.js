@@ -1,28 +1,37 @@
 const Database = require("better-sqlite3");
 
-const db = new Database("data.db");
+function withDb(fn) {
+  const db = new Database("data.db");
+  try {
+    // ensure schema exists
+    db.prepare(`
+      CREATE TABLE IF NOT EXISTS records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        url TEXT
+      )
+    `).run();
 
-db.prepare(`
-  CREATE TABLE IF NOT EXISTS records (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    url TEXT
-  )
-`).run();
-
-// insert helper
-function insertUrl(url) {
-  const stmt = db.prepare("INSERT INTO records (url) VALUES (?)");
-  return stmt.run(url.trim());
+    return fn(db);
+  } finally {
+    db.close(); // 👈 closes every time
+  }
 }
 
-// reset helper (delete + reset AUTOINCREMENT)
+function insertUrl(url) {
+  return withDb((db) => {
+    const stmt = db.prepare("INSERT INTO records (url) VALUES (?)");
+    return stmt.run(url.trim());
+  });
+}
+
 function resetTable() {
-  db.prepare("DELETE FROM records").run();
-  db.prepare("DELETE FROM sqlite_sequence WHERE name = 'records'").run();
+  return withDb((db) => {
+    db.prepare("DELETE FROM records").run();
+    db.prepare("DELETE FROM sqlite_sequence WHERE name = 'records'").run();
+  });
 }
 
 module.exports = {
   insertUrl,
   resetTable,
-  db,
 };
