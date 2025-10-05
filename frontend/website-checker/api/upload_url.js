@@ -27,6 +27,8 @@ module.exports = async (req, res) => {
       rowsInserted: 1,
     });
   } catch (err) {
+    console.log(body);
+    console.log(JSON.parse(body));
     console.error("upload-url error:", err);
     return res.status(500).json({ error: "Server error", details: err.message });
   }
