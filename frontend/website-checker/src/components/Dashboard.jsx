@@ -9,7 +9,7 @@ function Dashboard() {
   // ✅ Fetch stored URLs from backend
   const fetchUrls = async () => {
     try {
-      const res = await fetch("/api/get-urls");
+      const res = await fetch("/api/get_urls");
       if (!res.ok) throw new Error("Failed to fetch URLs");
       const data = await res.json();
       setUrls(data); // we’re returning just the array
