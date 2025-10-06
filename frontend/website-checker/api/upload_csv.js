@@ -1,7 +1,7 @@
 // /api/upload_csv.js
 const fs = require("fs");
 const csv = require("csv-parser");
-const formidable = require("formidable");
+const { formidable } = require("formidable");
 const path = require("path");
 const { insertUrl, resetTable } = require("../../../backend/db");
 
@@ -11,11 +11,9 @@ module.exports = async (req, res) => {
       return res.status(405).json({ error: "Method not allowed" });
     }
 
-    const form = formidable({
-      multiples: false,
-      uploadDir: "/tmp",
-      keepExtensions: true,
-    });
+
+  const form = formidable({ multiples: false, uploadDir: "/tmp", keepExtensions: true });
+
 
     // Parse form data (CSV upload)
     form.parse(req, async (err, fields, files) => {
