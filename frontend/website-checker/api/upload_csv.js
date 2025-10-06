@@ -22,7 +22,8 @@ module.exports = async (req, res) => {
         return res.status(500).json({ error: "Failed to parse form data" });
       }
 
-      const file = files.csv || files.file; // support `csv` or `file`
+        const fileField = files.csv || files.file;
+        const file = Array.isArray(fileField) ? fileField[0] : fileField;
       if (!file) {
         return res.status(400).json({ error: "CSV file is required" });
       }
