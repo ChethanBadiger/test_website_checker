@@ -1,34 +1,52 @@
-const Database = require("better-sqlite3");
+// backend/db.js
+const fs = require("fs");
+const path = require("path");
 
-function withDb(fn) {
-  const db = new Database("data.db");
-  try {
-    // ensure schema exists
-    db.prepare(`
-      CREATE TABLE IF NOT EXISTS records (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        url TEXT
-      )
-    `).run();
+const filePath = path.join(process.cwd(), "data", "urls.json");
 
-    return fn(db);
-  } finally {
-    db.close(); // 👈 closes every time
+/** Ensure the data directory and JSON file exist */
+function ensureFile() {
+  const dir = path.dirname(filePath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
+  if (!fs.existsSync(filePath)) {
+    fs.writeFileSync(filePath, JSON.stringify({ urls: [] }, null, 2));
   }
 }
 
-function insertUrl(url) {
-  return withDb((db) => {
-    const stmt = db.prepare("INSERT INTO records (url) VALUES (?)");
-    return stmt.run(url.trim());
-  });
+/** Read data from the JSON file */
+function readData() {
+  ensureFile();
+  const raw = fs.readFileSync(filePath, "utf-8");
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return { urls: [] };
+  }
 }
 
+/** Write data to the JSON file */
+function writeData(data) {
+  ensureFile();
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+}
+
+/** Insert a new URL */
+function insertUrl(url) {
+  const data = readData();
+  data.urls.push(url.trim());
+  data.lastUpdated = new Date().toISOString();
+  writeData(data);
+  return { rowsInserted: 1 };
+}
+
+/** Reset (clear) the stored URLs */
 function resetTable() {
-  return withDb((db) => {
-    db.prepare("DELETE FROM records").run();
-    db.prepare("DELETE FROM sqlite_sequence WHERE name = 'records'").run();
-  });
+  const data = { urls: [], lastUpdated: new Date().toISOString() };
+  writeData(data);
+  return { reset: true };
 }
 
 module.exports = {
