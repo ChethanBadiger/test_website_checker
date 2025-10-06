@@ -12,6 +12,7 @@ function Dashboard() {
       const res = await fetch("/api/get_url");
       if (!res.ok) throw new Error("Failed to fetch URLs");
       const data = await res.json();
+      console.log("Fetched URLs:", data);
       setUrls(data); // we’re returning just the array
     } catch (err) {
       console.error("Error fetching URLs:", err);
