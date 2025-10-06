@@ -1,6 +1,6 @@
-import puppeteer from "puppeteer";
-import fs from "fs";
-import path from "path";
+const puppeteer = require("puppeteer");
+const fs = require("fs");
+const path = require("path");
 
 const filePath = path.join("/tmp", "urls.json"); // JSON file for URLs
 
