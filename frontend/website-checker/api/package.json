@@ -6,6 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "vercel-build": "npm rebuild better-sqlite3 --build-from-source"
   },
+  "type":"module",
   "keywords": [],
   "author": "",
   "license": "ISC",
