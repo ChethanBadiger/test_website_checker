@@ -2,63 +2,46 @@
 const fs = require("fs");
 const csv = require("csv-parser");
 const { formidable } = require("formidable");
-const path = require("path");
 const { insertUrl, resetTable } = require("../../../backend/db");
 
 module.exports = async (req, res) => {
   try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ error: "Method not allowed" });
-    }
+    if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
+    const form = formidable({ multiples: false, uploadDir: "/tmp", keepExtensions: true });
 
-  const form = formidable({ multiples: false, uploadDir: "/tmp", keepExtensions: true });
-
-
-    // Parse form data (CSV upload)
     form.parse(req, async (err, fields, files) => {
-      if (err) {
-        console.error("Form parse error:", err);
-        return res.status(500).json({ error: "Failed to parse form data" });
-      }
+      if (err) return res.status(500).json({ error: "Failed to parse form data" });
 
-        const fileField = files.csv || files.file;
-        const file = Array.isArray(fileField) ? fileField[0] : fileField;
-      if (!file) {
-        return res.status(400).json({ error: "CSV file is required" });
-      }
+      const fileField = files.csv || files.file;
+      const file = Array.isArray(fileField) ? fileField[0] : fileField;
 
-      const filePath = file.filepath || file.path;
-      if (!filePath || !fs.existsSync(filePath)) {
+      if (!file || !file.filepath || !fs.existsSync(file.filepath)) {
         return res.status(400).json({ error: "Invalid file path" });
       }
 
-      // Reset JSON file before inserting
       resetTable();
-
       let rowCount = 0;
+      const insertedUrls = [];
 
-      // Stream through CSV rows
-      fs.createReadStream(filePath)
+      fs.createReadStream(file.filepath)
         .pipe(csv({ headers: false, skipLines: 0 }))
         .on("data", (row) => {
-          // Loop through each column in the row
           for (const key in row) {
             const value = row[key];
             if (typeof value === "string" && value.startsWith("http")) {
-              insertUrl(value);
+              const result = insertUrl(value);
+              insertedUrls.push(value);
               rowCount++;
             }
           }
         })
         .on("end", () => {
-          // Delete uploaded temp file
-          fs.unlinkSync(filePath);
-
+          fs.unlinkSync(file.filepath);
           res.status(200).json({
-            message: "CSV processed successfully (JSON reset first)",
+            message: "CSV processed successfully",
             rowsInserted: rowCount,
-            savedFile: "data/urls.json",
+            urls: insertedUrls,
           });
         })
         .on("error", (err) => {

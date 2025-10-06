@@ -4,49 +4,43 @@ const path = require("path");
 
 const filePath = path.join("/tmp", "urls.json");
 
-/** Ensure the data directory and JSON file exist */
+/** Ensure the JSON file exists */
 function ensureFile() {
-  const dir = path.dirname(filePath);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-
   if (!fs.existsSync(filePath)) {
     fs.writeFileSync(filePath, JSON.stringify({ urls: [] }, null, 2));
   }
 }
 
-/** Read data from the JSON file */
+/** Read data */
 function readData() {
   ensureFile();
-  const raw = fs.readFileSync(filePath, "utf-8");
   try {
-    return JSON.parse(raw);
+    return JSON.parse(fs.readFileSync(filePath, "utf-8"));
   } catch {
     return { urls: [] };
   }
 }
 
-/** Write data to the JSON file */
+/** Write data */
 function writeData(data) {
   ensureFile();
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
-/** Insert a new URL */
+/** Insert URL and return updated array */
 function insertUrl(url) {
   const data = readData();
   data.urls.push(url.trim());
   data.lastUpdated = new Date().toISOString();
   writeData(data);
-  return { rowsInserted: 1 };
+  return { rowsInserted: 1, urls: data.urls };
 }
 
-/** Reset (clear) the stored URLs */
+/** Reset table and return empty array */
 function resetTable() {
   const data = { urls: [], lastUpdated: new Date().toISOString() };
   writeData(data);
-  return { reset: true };
+  return { reset: true, urls: [] };
 }
 
 module.exports = {
