@@ -2,7 +2,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const filePath = path.join(process.cwd(), "data", "urls.json");
+const filePath = path.join("/tmp", "urls.json");
 
 /** Ensure the data directory and JSON file exist */
 function ensureFile() {
