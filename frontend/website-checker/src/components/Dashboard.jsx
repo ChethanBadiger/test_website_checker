@@ -106,9 +106,6 @@ function Dashboard() {
 
         <div>
           <h3>Stored URLs:</h3>
-          {urls.length === 0 ? (
-            <p>No URLs found.</p>
-          ) : (
             <ul>
               {urls.map((u, i) => (
                 <li key={i}>
@@ -118,7 +115,6 @@ function Dashboard() {
                 </li>
               ))}
             </ul>
-          )}
         </div>
       </div>
     </>
