@@ -84,42 +84,44 @@ function Dashboard() {
   };
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h2>Website Checker Dashboard</h2>
+    <>
+      <div style={{ padding: "2rem" }}>
+        <h2>Website Checker Dashboard</h2>
 
-      <div style={{ marginBottom: "1rem" }}>
-        <input
-          type="text"
-          placeholder="Enter website URL"
-          value={url}
-          onChange={handleUrlChange}
-          style={{ marginRight: "1rem", padding: "0.5rem" }}
-        />
-        <input type="file" accept=".csv" onChange={handleFileChange} />
-        <button onClick={handleSubmit} disabled={loading}>
-          {loading ? "Processing..." : "Submit"}
-        </button>
+        <div style={{ marginBottom: "1rem" }}>
+          <input
+            type="text"
+            placeholder="Enter website URL"
+            value={url}
+            onChange={handleUrlChange}
+            style={{ marginRight: "1rem", padding: "0.5rem" }}
+          />
+          <input type="file" accept=".csv" onChange={handleFileChange} />
+          <button onClick={handleSubmit} disabled={loading}>
+            {loading ? "Processing..." : "Submit"}
+          </button>
+        </div>
+
+        <hr />
+
+        <div style={{ marginTop: "1rem" }}>
+          <h3>Stored URLs:</h3>
+          {urls.length === 0 ? (
+            <p>No URLs found.</p>
+          ) : (
+            <ul>
+              {urls.map((u, i) => (
+                <li key={i}>
+                  <a href={u} target="_blank" rel="noopener noreferrer">
+                    {u}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
-
-      <hr />
-
-      <div style={{ marginTop: "1rem" }}>
-        <h3>Stored URLs:</h3>
-        {urls.length === 0 ? (
-          <p>No URLs found.</p>
-        ) : (
-          <ul>
-            {urls.map((u, i) => (
-              <li key={i}>
-                <a href={u} target="_blank" rel="noopener noreferrer">
-                  {u}
-                </a>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
+    </>
   );
 }
 
