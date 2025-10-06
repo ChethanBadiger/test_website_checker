@@ -85,10 +85,10 @@ function Dashboard() {
 
   return (
     <>
-      <div style={{ padding: "2rem" }}>
+      <div>
         <h2>Website Checker Dashboard</h2>
 
-        <div style={{ marginBottom: "1rem" }}>
+        <div>
           <input
             type="text"
             placeholder="Enter website URL"
@@ -104,7 +104,7 @@ function Dashboard() {
 
         <hr />
 
-        <div style={{ marginTop: "1rem" }}>
+        <div>
           <h3>Stored URLs:</h3>
           {urls.length === 0 ? (
             <p>No URLs found.</p>
