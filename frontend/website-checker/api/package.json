@@ -12,6 +12,7 @@
   "description": "",
   "dependencies": {
     "csv-parser": "^3.2.0",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "formidable": "^3.5.4"
   }
 }
