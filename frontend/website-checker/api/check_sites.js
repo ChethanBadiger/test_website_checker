@@ -2,7 +2,7 @@ const puppeteer = require("puppeteer");
 const fs = require("fs");
 const path = require("path");
 
-const filePath = path.join("/tmp", "urls.json"); // JSON file for URLs
+const filePath = path.join(process.cwd(), "data", "urls.json"); // JSON file for URLs
 
 function ensureFile() {
   const dir = path.dirname(filePath);
