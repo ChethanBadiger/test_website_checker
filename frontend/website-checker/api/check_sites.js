@@ -4,12 +4,20 @@ const path = require("path");
 
 const filePath = path.join(process.cwd(), "data", "urls.json"); // JSON file for URLs
 
-/** Ensure JSON file exists */
 function ensureFile() {
+  const dir = path.dirname(filePath);
+  
+  // ✅ Ensure directory exists first
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
+  // ✅ Then create the file if it doesn't exist
   if (!fs.existsSync(filePath)) {
     fs.writeFileSync(filePath, JSON.stringify({ urls: [] }, null, 2));
   }
 }
+
 
 /** Read URLs from JSON file */
 function readUrls() {
