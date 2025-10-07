@@ -1,18 +1,19 @@
 const puppeteer = require("puppeteer");
 const fs = require("fs");
 const path = require("path");
+const { error } = require("console");
 
 const filePath = path.join(process.cwd(), "data", "urls.json"); // JSON file for URLs
 
 function ensureFile() {
   const dir = path.dirname(filePath);
   
-  // ✅ Ensure directory exists first
+  // Ensure directory exists first
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
 
-  // ✅ Then create the file if it doesn't exist
+  // Then create the file if it doesn't exist
   if (!fs.existsSync(filePath)) {
     fs.writeFileSync(filePath, JSON.stringify({ urls: [] }, null, 2));
   }
